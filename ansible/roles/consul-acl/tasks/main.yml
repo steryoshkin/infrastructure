@@ -1,0 +1,104 @@
+- name: Convert master_list from JSON string to list
+  set_fact:
+    master_list_as_list: "{{ master_list | from_json }}"
+
+- name: Consul ACL bootstrap
+  command: consul acl bootstrap
+  delegate_to: "{{ master_list_as_list[0] }}"
+  run_once: true
+  register: bootstrap_output
+
+- name: Output bootstrap token SecretID
+  debug:
+    msg: "{{ bootstrap_output.stdout }}"
+
+- name: Request user input token acl
+  pause:
+    prompt: "Please enter your parameter"
+  register: acl_main_token
+
+- name: Copy ACL policy file for Consul server
+  template:
+    src: "consul-cross-dc-policy.hcl.j2"
+    dest: "/tmp/consul-cross-dc-policy.hcl"
+    mode: 0644
+  delegate_to: "{{ master_list_as_list[0] }}"
+
+- name: Create Consul ACL policy
+  environment:
+    CONSUL_HTTP_TOKEN: "{{ acl_main_token.user_input }}"
+  command: consul acl policy create -name "consul-cross-dc" -description "consul cross-DC policy" -rules @/tmp/consul-cross-dc-policy.hcl
+  delegate_to: "{{ master_list_as_list[0] }}"
+  run_once: true
+
+- name: Create Consul ACL token
+  environment:
+    CONSUL_HTTP_TOKEN: "{{ acl_main_token.user_input }}"
+  command: consul acl token create -description "ACL token for cross-DC" -policy-name "consul-cross-dc"
+  delegate_to: "{{ master_list_as_list[0] }}"
+  run_once: true
+
+- name: Copy ACL policy file for Consul server
+  template:
+    src: "nomad-access-policy.hcl.j2"
+    dest: "/tmp/nomad-access-policy.hcl"
+    mode: 0644
+  delegate_to: "{{ master_list_as_list[0] }}"
+
+- name: Create Consul ACL policy for Nomad nodes
+  environment:
+    CONSUL_HTTP_TOKEN: "{{ acl_main_token.user_input }}"
+  command: consul acl policy create -name "consul-nomad-dc" -description "consul acl policy for nomad" -rules @/tmp/nomad-access-policy.hcl
+  delegate_to: "{{ master_list_as_list[0] }}"
+  run_once: true
+
+- name: Create Consul ACL token
+  environment:
+    CONSUL_HTTP_TOKEN: "{{ acl_main_token.user_input }}"
+  command: consul acl token create -description "ACL token for Nomad Cluster" -policy-name "consul-nomad-dc"
+  delegate_to: "{{ master_list_as_list[0] }}"
+  run_once: true
+
+- name: Copy ACL policy file for Vault server
+  template:
+    src: "vault-access-policy.hcl.j2"
+    dest: "/tmp/vault-access-policy.hcl"
+    mode: 0644
+  delegate_to: "{{ master_list_as_list[0] }}"
+
+- name: Create Consul ACL policy for Nomad nodes
+  environment:
+    CONSUL_HTTP_TOKEN: "{{ acl_main_token.user_input }}"
+  command: consul acl policy create -name "consul-vault-dc" -description "consul acl policy for vault" -rules @/tmp/vault-access-policy.hcl
+  delegate_to: "{{ master_list_as_list[0] }}"
+  run_once: true
+
+- name: Create Consul ACL token
+  environment:
+    CONSUL_HTTP_TOKEN: "{{ acl_main_token.user_input }}"
+  command: consul acl token create -description "ACL token for Vault Cluster" -policy-name "consul-vault-dc"
+  delegate_to: "{{ master_list_as_list[0] }}"
+  run_once: true
+
+- name: Copy ACL policy for Anonymous token 
+  template:
+    src: "anonymous-token-policy.hcl.j2"
+    dest: "/tmp/anonymous-token-policy.hcl"
+    mode: 0644
+  delegate_to: "{{ master_list_as_list[0] }}"
+
+- name: Create Consul ACL policy for Nomad nodes
+  environment:
+    CONSUL_HTTP_TOKEN: "{{ acl_main_token.user_input }}"
+  command: consul acl policy create -name "consul-anonymous-token-policy" -description "consul acl policy for anonymous api calls" -rules @/tmp/anonymous-token-policy.hcl
+  delegate_to: "{{ master_list_as_list[0] }}"
+  run_once: true
+
+- name: Update policy for Anonymous token 
+  environment:
+    CONSUL_HTTP_TOKEN: "{{ acl_main_token.user_input }}"
+  command: consul acl token update -id="anonymous" -policy-name="consul-anonymous-token-policy"
+  delegate_to: "{{ master_list_as_list[0] }}"
+  run_once: true
+
+

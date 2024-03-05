@@ -1,0 +1,35 @@
+- name: Update and install (for OSS Vault binary)
+  apt:
+    update_cache: yes
+    name: "vault"
+  environment: "{{ proxy_env }}"
+
+- name: Set VAULT_API_ADDR env
+  lineinfile:
+    path: /etc/environment
+    line: VAULT_API_ADDR="http://{{ hostvars[inventory_hostname].ansible_host }}:8200"
+    create: true
+
+- name: Set VAULT_CLUSTER_ADDR env
+  lineinfile:
+    path: /etc/environment
+    line: VAULT_CLUSTER_ADDR="http://{{ hostvars[inventory_hostname].ansible_host }}:8200"
+    create: true
+
+- name: Set VAULT_ADDR env
+  lineinfile:
+    path: /etc/environment
+    line: VAULT_ADDR="http://vault.service.{{ datacenter }}.{{ consul_domain }}:8200"
+    create: true
+
+- name: Replace config
+  template:
+    src: "vault.hcl.j2"
+    dest: "/etc/vault.d/vault.hcl"
+    mode: 0644
+
+- name: Enable service Vault, and not touch the state
+  systemd:
+    name: "vault"
+    enabled: yes
+    state: stopped

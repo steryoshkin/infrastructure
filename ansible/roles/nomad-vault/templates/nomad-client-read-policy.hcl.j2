@@ -1,0 +1,4 @@
+# allow kv path to read by nomad
+path "secret/*" {
+  capabilities = ["read"]
+}

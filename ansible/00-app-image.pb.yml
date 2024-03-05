@@ -1,0 +1,12 @@
+- hosts: all
+  become: yes
+  vars:
+    docker_users:
+      - ubuntu
+  vars_files:
+    - variables.yml
+  roles:
+    - role: ubuntu-clean
+    - role: ubuntu-upgrade
+    - role: docker-config
+    - role: geerlingguy.docker

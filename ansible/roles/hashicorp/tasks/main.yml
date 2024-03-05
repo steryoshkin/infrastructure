@@ -1,0 +1,28 @@
+- name: Create Keyrings dir
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+
+- name: Add Hashicorp apt repository key.
+  ansible.builtin.get_url:
+    url: "https://apt.releases.hashicorp.com/gpg"
+    dest: /tmp/hashicorp.temp.asc
+    mode: '0644'
+    force: true
+  environment: "{{ proxy_env }}"
+
+- name: dearmor key
+  shell: "gpg --dearmor --batch --yes -o /etc/apt/keyrings/hashicorp.gpg /tmp/hashicorp.temp.asc && rm /tmp/hashicorp.temp.asc"
+
+- name: Add the official HashiCorp Linux repository
+  apt_repository:
+    repo: deb [arch=amd64 signed-by=/etc/apt/keyrings/hashicorp.gpg] https://apt.releases.hashicorp.com {{ansible_distribution_release}} main
+    filename: hashicorp
+    state: present
+  environment: "{{ proxy_env }}"
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    force: yes
+  environment: "{{ proxy_env }}"

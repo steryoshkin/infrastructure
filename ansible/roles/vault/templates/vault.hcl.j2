@@ -1,0 +1,25 @@
+cluster_name = "{{ datacenter }}"
+max_lease_ttl = "768h"
+default_lease_ttl = "768h"
+
+disable_clustering = "False"
+
+listener "tcp" {
+  address          = "{{ hostvars[inventory_hostname].ansible_host }}:8200"
+  cluster_address  = "{{ hostvars[inventory_hostname].ansible_host }}:8201"
+  tls_disable      = "true"
+}
+
+storage "consul" {
+  address = "127.0.0.1:8500"
+  service = "vault"
+  path    = "vault/"
+  scheme = "http"
+  token  = "{{ vault_acl }}"
+}
+
+telemetry {
+  disable_hostname = true
+}
+
+ui = true

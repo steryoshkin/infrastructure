@@ -1,0 +1,42 @@
+job "csi-storage-controller" {
+  datacenters = ["{{datacenter}}"]
+  type        = "service"
+
+  group "csi-controller" {
+    task "controller" {
+      driver = "docker"
+
+      constraint {
+        attribute = "${attr.unique.hostname}"
+        value     = "builder"
+      }
+
+      config {
+        image = "registry.gitlab.com/rocketduck/csi-plugin-nfs:0.7.0"
+
+        args = [
+          "--type=controller",
+          "--node-id=${attr.unique.hostname}",
+          "--nfs-server={{ nfs_server_addr }}:{{nfs_folder_path}}", 
+          "--mount-options=defaults",
+        ]
+
+        network_mode = "host"
+
+        privileged = true
+      }
+
+      csi_plugin {
+        id        = "nfs" 
+        type      = "controller"
+        mount_dir = "/csi"
+      }
+
+      resources {
+        cpu    = 300
+        memory = 256
+      }
+
+    }
+  }
+}

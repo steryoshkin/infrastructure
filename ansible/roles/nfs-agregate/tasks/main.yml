@@ -1,0 +1,29 @@
+- name: Installing cifs-utils
+  apt:
+    name: cifs-utils
+    state: present
+
+- name: Installing nfs-common
+  apt:
+    name: nfs-common
+    state: present
+
+- name: Ensure NFS directory exists
+  file:
+    path: /mnt
+    state: directory
+    mode: '0777'
+
+- name: Add NFS mount to /etc/fstab
+  lineinfile:
+    path: /etc/fstab
+    line: "{{ nfs_server_addr }}:{{ nfs_folder_path }} /mnt nfs defaults 0 0"
+    state: present
+
+- name: Mount NFS folder
+  ansible.builtin.mount:
+    src: "{{ nfs_server_addr }}:{{ nfs_folder_path }}"
+    path: /mnt
+    fstype: nfs
+    opts: defaults
+    state: mounted

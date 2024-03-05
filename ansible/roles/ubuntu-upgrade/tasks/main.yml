@@ -1,0 +1,8 @@
+- name: update packages
+  become: true
+  apt:
+    update_cache: true
+    autoclean: true
+    autoremove: true
+    upgrade: dist
+  environment: "{{ proxy_env }}"

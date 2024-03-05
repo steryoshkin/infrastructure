@@ -1,0 +1,24 @@
+- name: Set Envoy version environment variable
+  lineinfile:
+    path: /etc/environment
+    line: ENVOY_VERSION_STRING="{{ envoy_version }}"
+    create: true
+
+- name: Download and execute the func-e install script
+  ansible.builtin.shell: "curl -L https://func-e.io/install.sh | bash -s -- -b /usr/local/bin"
+  args:
+    creates: "/usr/local/bin/func-e"
+  environment: "{{ proxy_env }}"
+    
+# - name: Set FUNC_E_PLATFORM environment variable
+#   lineinfile:
+#     path: /etc/environment
+#     line: FUNC_E_PLATFORM="darwin/amd64"
+#     create: true
+
+- name: Use specific version of Envoy with func-e
+  ansible.builtin.command: "func-e use {{ envoy_version }}"
+  environment: "{{ proxy_env }}"
+
+- name: Copy Envoy binary to /usr/local/bin
+  ansible.builtin.command: "cp ~/.func-e/versions/{{ envoy_version }}/bin/envoy /usr/local/bin/"

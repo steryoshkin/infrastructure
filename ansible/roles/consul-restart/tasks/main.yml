@@ -1,0 +1,5 @@
+- name: Enable service Consul and restart
+  service:
+    name: "consul"
+    enabled: yes
+    state: restarted

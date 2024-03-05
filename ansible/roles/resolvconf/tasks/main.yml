@@ -1,0 +1,21 @@
+- name: Install resolvconf package
+  apt:
+    name: resolvconf
+    state: present
+
+- name: Adding DNS-server into resolv.conf head
+  lineinfile:
+    path: /etc/resolvconf/resolv.conf.d/head
+    line: 'nameserver {{ internal_vps_dns }}'
+
+- name: Enable and restart resolvconf service
+  systemd:
+    name: resolvconf.service
+    enabled: yes
+    state: restarted
+
+- name: Update dns cache resolvconf
+  ansible.builtin.command:
+    cmd: resolvconf -u
+
+

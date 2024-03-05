@@ -1,0 +1,13 @@
+- hosts: masters
+  strategy: free
+  become: yes
+  vars:
+    vault_token: "{{ lookup('env', 'VAULT_TOKEN') }}"
+    nomad_acl: "{{lookup('env', 'NOMAD_ACL_TOKEN')}}"
+    nomad_server: true
+    nomad_client: false
+  vars_files:
+    - variables.yml
+  roles:
+    - role: nomad
+    - role: nomad-restart

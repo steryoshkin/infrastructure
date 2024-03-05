@@ -1,0 +1,11 @@
+zone "{{ consul_domain }}" {
+    type forward;
+    forward only;
+    forwarders { 127.0.0.1 port 8600; };
+};
+
+zone "internal" {
+    type forward;
+    forward only;
+    forwarders { {{ cloud_dns_ip }}; };
+};

@@ -1,0 +1,8 @@
+- name: Copy Nomad Job template to target
+  template:
+    src: controller.nomad.hcl.j2
+    dest: /tmp/controller.nomad.hcl
+    mode: 0644
+
+- name: Run Nomad Job on target node
+  shell: nomad job run /tmp/controller.nomad.hcl

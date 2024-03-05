@@ -1,0 +1,49 @@
+- name: "Setup build server"
+  hosts: builder
+  become: true
+  environment:
+    GITLAB_RUNNER_DISABLE_SKEL: "true"
+  vars:
+    acl_mode: "deny" # consul acl mode
+    agent_token: "{{lookup('env', 'AGENT_ACL_TOKEN')}}"
+    nomad_acl: "{{lookup('env', 'NOMAD_ACL_TOKEN')}}"
+    consul_server: false
+    nomad_server: false
+    nomad_client: true
+    docker_users:
+      - ubuntu
+      - gitlab-runner
+    docker_edition: "ce"
+    docker_package_state: present
+    gitlab_runner_coordinator_url: "https://radisand.gitlab.yandexcloud.net"
+    gitlab_runner_registration_token: "{{lookup('env', 'GITLAB_RUNNER_REGISTRATION_TOKEN')}}"
+    gitlab_runner_concurrent: 4
+    gitlab_runner_runners:
+      - name: 'Yandex cloud shell runner'
+        executor: shell
+        run_untagged: false
+        tags:
+          - yc-shell
+      - name: 'Yandex cloud docker runner'
+        executor: docker
+        run_untagged: false
+          - yc-docker
+        docker_volumes:
+          - "/var/run/docker.sock:/var/run/docker.sock"
+          - "/cache"
+  vars_files:
+    - variables.yml
+  roles:
+    - role: ubuntu-clean
+    - role: ubuntu-upgrade
+    - role: docker-config
+    - role: geerlingguy.docker
+    - role: riemers.gitlab-runner
+    - role: support-packages
+    - role: nfs-agregate
+    - role: hashicorp
+    - role: consul
+    - role: nomad
+    - role: resolvconf
+    - role: consul-restart
+    - role: nomad-restart

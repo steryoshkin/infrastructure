@@ -1,0 +1,18 @@
+datacenter: "yc"
+consul_domain: "st"
+docker_helper_config_path: "/etc/docker/config.json"
+master_list: "{{ groups['masters'] |  map('extract', hostvars, ['ansible_host']) | list | to_json }}" 
+consul_version: "1.17.1-1"
+nomad_version: "1.7.2-1"
+vault_version: "1.15.4-1"
+envoy_version: "1.27.2"
+docker_secret: "{{ lookup('env', 'YC_DOCKER_SECRET') }}" #base64 oauth token with username
+
+cloud_dns_ip: "10.82.2.2" #yandex cloud dns (internal zone)
+internal_vps_dns : "10.82.2.3" #internal services dns server
+
+nfs_folder_path : "/nfs/nomadshare"
+nfs_server_addr: "10.82.2.112"
+
+proxy_env:
+  https_proxy: "{{ lookup('env','PROXY_URL') }}"

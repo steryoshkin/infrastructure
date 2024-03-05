@@ -1,0 +1,56 @@
+- name: Set VAULT_TOKEN env
+  lineinfile:
+    path: /etc/environment
+    line: VAULT_TOKEN={{ vault_token }}
+    state: present
+    create: true
+
+- name: Create a policy
+  template:
+    src: "access-tables-policy.hcl.j2"
+    dest: "/tmp/access-tables-policy.hcl"
+    mode: 0644
+
+- name: Apply policy access-tables Vault
+  ansible.builtin.command:
+    cmd: "vault policy write access-tables /tmp/access-tables-policy.hcl"
+
+- name: Create a policy for nomad client read vault kv
+  template:
+    src: "nomad-client-read-policy.hcl.j2"
+    dest: "/tmp/nomad-client-read-policy.hcl"
+    mode: 0644
+
+- name: Apply policy read-vault Vault
+  ansible.builtin.command:
+    cmd: "vault policy write read-vault /tmp/nomad-client-read-policy.hcl"
+
+- name: Create a policy file for the Nomad server 
+  template:
+    src: "nomad-server-policy.hcl.j2"
+    dest: "/tmp/nomad-server-policy.hcl"
+    mode: 0644
+
+- name: Apply policy nomad-server-policy Vault
+  ansible.builtin.command:
+    cmd: "vault policy write nomad-server /tmp/nomad-server-policy.hcl"
+
+- name: Create a role file for the Nomad server
+  template:
+    src: "nomad-cluster-role.json.j2"
+    dest: "/tmp/nomad-cluster-role.json"
+    mode: 0644
+
+- name: Apply role nomad-cluster Vault
+  ansible.builtin.command:
+    cmd: "vault write /auth/token/roles/nomad-cluster @/tmp/nomad-cluster-role.json"
+
+- name: Create nomad server token Vault
+  ansible.builtin.command:
+    cmd: "vault token create -policy nomad-server -period 72h -orphan"
+  register: vault_token_output
+
+- name: Show secret token for NOMAD
+  ansible.builtin.debug:
+    msg: "{{ vault_token_output.stdout }}"
+

@@ -1,0 +1,36 @@
+- name: Create a directory if it does not exist
+  become: true
+  file:
+    path: /etc/docker
+    state: directory
+    mode: '0755'
+
+- name: Create a .docker directory if it does not exist
+  become: true
+  file:
+    path: /root/.docker
+    state: directory
+    mode: '0700'
+
+- name: "Add default settings to docker"
+  template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: 0644
+
+- name: "Add general auth settings to docker"
+  template:
+    src: config.json.j2
+    dest: "{{ docker_helper_config_path }}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Set DOCKER_CONFIG env
+  lineinfile:
+    path: /etc/environment
+    line: DOCKER_CONFIG="/etc/docker/"
+    state: present
+    create: true

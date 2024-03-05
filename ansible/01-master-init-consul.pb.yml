@@ -1,0 +1,15 @@
+- hosts: masters
+  become: yes
+  vars:
+    consul_server: true
+    acl_mode: "allow" # consul acl mode (default - allow , after master configuration  "allow" shoud be -> "deny")
+    agent_token: "{{lookup('env', 'AGENT_ACL_TOKEN')}}"
+  vars_files:
+    - variables.yml
+  roles:
+    - role: bind9
+    - role: resolvconf
+    - role: hashicorp
+    - role: consul
+    - role: consul-restart
+    - role: consul-acl

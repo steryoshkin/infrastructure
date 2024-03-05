@@ -1,0 +1,5 @@
+- name: Enable service Vault and restart
+  service:
+    name: "vault"
+    enabled: yes
+    state: restarted

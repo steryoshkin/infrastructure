@@ -1,0 +1,61 @@
+datacenter = "{{ datacenter }}"
+data_dir = "/opt/nomad/data"
+{% raw %}
+bind_addr = "0.0.0.0"
+{% endraw %}
+
+{% if nomad_server %}
+server {
+  enabled = true
+  bootstrap_expect = 1
+}
+{% endif %}
+{% if nomad_client %}
+client {
+  enabled = true
+}
+{% endif %}
+
+consul {
+  address = "127.0.0.1:8500"
+  token = "{{ nomad_acl }}"
+}
+
+log_level = "WARN"
+
+plugin "docker" {
+    config {
+        allow_privileged = true
+{% if nomad_client %}
+        auth {
+            config = "{{docker_helper_config_path}}"
+        }
+{% endif %}
+        volumes {
+            enabled = true
+        }
+    }
+}
+
+plugin "raw_exec" {
+  config {
+    enabled = true
+  }
+}
+
+telemetry {
+    collection_interval = "5s",
+    publish_allocation_metrics = true,
+    publish_node_metrics = true,
+    prometheus_metrics = true
+}
+
+vault {
+  enabled = true
+  address = "http://vault.service.{{ datacenter }}.{{ consul_domain }}:8200"
+{% if nomad_server %}
+  token = "{{ vault_token }}"
+  task_token_ttl = "1h"
+  create_from_role = "nomad-cluster"
+{% endif %}
+}

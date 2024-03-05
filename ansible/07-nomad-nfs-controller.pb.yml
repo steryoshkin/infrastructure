@@ -1,0 +1,8 @@
+- hosts: builder
+  become: yes
+  vars:
+    type_csi : controller
+  vars_files:
+    - variables.yml
+  roles:
+    - role: nomad-csi

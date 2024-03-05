@@ -1,0 +1,23 @@
+- name: Update and install (for OSS Nomad binary)
+  apt:
+    name: "nomad={{ nomad_version }}"
+  environment: "{{ proxy_env }}"
+
+- name: Enable service Nomad, and not touch the state
+  service:
+    name: "nomad"
+    enabled: yes
+    state: stopped
+
+- name: Replace config
+  template:
+    src: "nomad.hcl.j2"
+    dest: "/etc/nomad.d/nomad.hcl"
+    mode: 0644
+
+- name: Set NOMAD_ADDR env
+  lineinfile:
+    path: /etc/environment
+    line: NOMAD_ADDR="http://nomad.service.{{ datacenter }}.{{ consul_domain }}:4646"
+    state: present
+    create: true

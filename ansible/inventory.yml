@@ -1,0 +1,23 @@
+all:
+  vars:
+      ansible_user: ubuntu
+      ssh_key_path: ~/.ssh
+  hosts:
+    master-a:
+      ansible_host: 10.82.2.3
+      ansible_ssh_private_key_file: "{{ ssh_key_path }}/master-a/id_rsa"
+    nomad-member-1:
+      ansible_host: 10.82.2.10
+      ansible_ssh_private_key_file: "{{ ssh_key_path }}/nomad-member-1/id_rsa"
+    builder:
+      ansible_host: 10.82.2.4
+      ansible_ssh_private_key_file: "{{ ssh_key_path }}/builder/id_rsa"
+    nfs:
+      ansible_host: 10.82.2.112
+      ansible_ssh_private_key_file: "{{ ssh_key_path }}/nfs/id_rsa"
+masters:
+  hosts:
+    master-a:
+clients:
+  hosts:
+    nomad-member-1:

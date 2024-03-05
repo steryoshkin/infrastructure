@@ -1,0 +1,23 @@
+- name: Update and install (for OSS Consul binary)
+  apt:
+    name: "consul={{ consul_version }}"
+  environment: "{{ proxy_env }}"
+
+- name: Enable service Consul, and not touch the state
+  service:
+    name: "consul"
+    enabled: yes
+    state: stopped
+
+- name: Replace config
+  template:
+    src: "consul.hcl.j2"
+    dest: "/etc/consul.d/consul.hcl"
+    mode: 0644
+
+- name: Set CONSUL_HTTP_ADDR env
+  lineinfile:
+    path: /etc/environment
+    line: CONSUL_HTTP_ADDR="http://consul.service.{{ datacenter }}.{{ consul_domain }}:8500"
+    state: present
+    create: true

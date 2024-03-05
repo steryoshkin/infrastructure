@@ -1,0 +1,7 @@
+- hosts: masters
+  strategy: free
+  become: yes
+  vars: 
+    vault_token: "{{ lookup('env', 'VAULT_TOKEN') }}"
+  roles:
+    - role: nomad-vault

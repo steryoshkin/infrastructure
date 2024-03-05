@@ -1,0 +1,8 @@
+- hosts: nfs
+  become: yes
+  vars_files:
+    - variables.yml
+  roles:
+    - role: ubuntu-clean
+    - role: ubuntu-upgrade
+    - role: nfs

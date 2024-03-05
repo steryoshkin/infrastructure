@@ -1,0 +1,21 @@
+- hosts: clients
+  become: yes
+  vars:
+    acl_mode: "deny" # consul acl mode
+    nomad_acl: "{{lookup('env', 'NOMAD_ACL_TOKEN')}}"
+    agent_token: "{{lookup('env', 'AGENT_ACL_TOKEN')}}"
+    consul_server: false
+    nomad_server: false
+    nomad_client: true
+  vars_files:
+    - variables.yml
+  roles:
+    - role: resolvconf
+    - role: hashicorp
+    - role: nfs-agregate
+    - role: nomad-cni
+    - role: envoy
+    - role: consul
+    - role: nomad
+    - role: consul-restart
+    - role: nomad-restart

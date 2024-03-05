@@ -1,0 +1,10 @@
+- hosts: masters
+  strategy: free
+  become: yes
+  vars:
+    vault_acl: "{{lookup('env', 'VAULT_ACL_TOKEN')}}"
+  vars_files:
+    - variables.yml
+  roles:
+    - role: vault
+    - role: vault-restart

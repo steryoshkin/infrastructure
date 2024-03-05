@@ -1,0 +1,26 @@
+- name: Install bind9
+  apt:
+    name: ['bind9']
+    state: present
+    update_cache: yes
+
+- name: Template configs options
+  template:
+    src: named.conf.options.j2
+    dest: /etc/bind/named.conf.options
+
+- name: Template configs local
+  template:
+    src: named.conf.local.j2
+    dest: /etc/bind/named.conf.local
+
+- name: Template configs named
+  template:
+    src: named.j2
+    dest: /etc/default/named
+
+- name: Enable and restart bind9
+  service:
+    name: bind9
+    enabled: true
+    state: restarted

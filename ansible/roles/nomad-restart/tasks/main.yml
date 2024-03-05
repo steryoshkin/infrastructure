@@ -1,0 +1,5 @@
+- name: Enable service Nomad and restart
+  service:
+    name: "nomad"
+    enabled: yes
+    state: restarted

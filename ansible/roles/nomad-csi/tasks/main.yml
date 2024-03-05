@@ -1,0 +1,9 @@
+---
+
+- name: Run NFS + csi controller nomad job
+  import_tasks: csi-controller.yml
+  when: type_csi == "controller"
+
+- name: Run NFS + csi storage nomad job
+  import_tasks: csi-storage.yml
+  when: type_csi == "storage"
